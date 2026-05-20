@@ -1,0 +1,9 @@
+config {
+  type: "assertion",
+  description: "product_id deve ser único na dim_produto."
+}
+
+SELECT product_id, COUNT(*) AS total
+FROM ${ref("dim_produto")}
+GROUP BY product_id
+HAVING COUNT(*) > 1

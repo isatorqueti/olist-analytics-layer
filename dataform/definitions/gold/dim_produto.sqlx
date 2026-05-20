@@ -1,0 +1,39 @@
+config {
+  type: "table",
+  schema: "olist_gold",
+  description: "Dimensão de produtos com categoria traduzida e informações do seller."
+}
+
+WITH produto_seller AS (
+  SELECT
+    product_id,
+    seller_id,
+    ROW_NUMBER() OVER (
+      PARTITION BY product_id
+      ORDER BY seller_id
+    ) AS rn
+  FROM ${ref("silver_order_items")}
+)
+
+SELECT
+  p.product_id,
+  COALESCE(
+    t.product_category_name_english,
+    p.product_category_name,
+    'uncategorized'
+  )                        AS product_category,
+  p.product_photos_qty,
+  p.product_weight_g,
+  s.seller_id,
+  s.seller_city,
+  s.seller_state
+
+FROM ${ref("silver_products")} p
+LEFT JOIN ${ref("silver_category_translation")} t
+  ON p.product_category_name = t.product_category_name
+LEFT JOIN produto_seller ps
+  ON p.product_id = ps.product_id AND ps.rn = 1
+LEFT JOIN ${ref("silver_sellers")} s
+  ON ps.seller_id = s.seller_id
+
+WHERE p.product_id IS NOT NULL

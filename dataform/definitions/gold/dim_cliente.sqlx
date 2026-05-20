@@ -1,0 +1,54 @@
+config {
+  type: "table",
+  schema: "olist_gold",
+  description: "Dimensão de clientes únicos com localização. Uma linha por customer_unique_id."
+}
+
+SELECT
+  customer_unique_id                    AS customer_id,
+  customer_city,
+  customer_state,
+  CASE customer_state
+    WHEN 'SP' THEN 'Sudeste'
+    WHEN 'RJ' THEN 'Sudeste'
+    WHEN 'MG' THEN 'Sudeste'
+    WHEN 'ES' THEN 'Sudeste'
+    WHEN 'PR' THEN 'Sul'
+    WHEN 'SC' THEN 'Sul'
+    WHEN 'RS' THEN 'Sul'
+    WHEN 'BA' THEN 'Nordeste'
+    WHEN 'PE' THEN 'Nordeste'
+    WHEN 'CE' THEN 'Nordeste'
+    WHEN 'MA' THEN 'Nordeste'
+    WHEN 'PB' THEN 'Nordeste'
+    WHEN 'RN' THEN 'Nordeste'
+    WHEN 'AL' THEN 'Nordeste'
+    WHEN 'SE' THEN 'Nordeste'
+    WHEN 'PI' THEN 'Nordeste'
+    WHEN 'MT' THEN 'Centro-Oeste'
+    WHEN 'MS' THEN 'Centro-Oeste'
+    WHEN 'GO' THEN 'Centro-Oeste'
+    WHEN 'DF' THEN 'Centro-Oeste'
+    WHEN 'AM' THEN 'Norte'
+    WHEN 'PA' THEN 'Norte'
+    WHEN 'RO' THEN 'Norte'
+    WHEN 'AC' THEN 'Norte'
+    WHEN 'AP' THEN 'Norte'
+    WHEN 'RR' THEN 'Norte'
+    WHEN 'TO' THEN 'Norte'
+    ELSE 'Não identificado'
+  END AS regiao
+
+FROM (
+  SELECT
+    customer_unique_id,
+    customer_city,
+    customer_state,
+    ROW_NUMBER() OVER (
+      PARTITION BY customer_unique_id
+      ORDER BY customer_city
+    ) AS rn
+  FROM ${ref("silver_customers")}
+  WHERE customer_unique_id IS NOT NULL
+)
+WHERE rn = 1

@@ -1,0 +1,28 @@
+config {
+  type: "table",
+  schema: "olist_gold",
+  description: "Dimensão de datas gerada a partir das datas de compra dos pedidos."
+}
+
+WITH datas AS (
+  SELECT DISTINCT
+    DATE(order_purchase_timestamp) AS data
+  FROM ${ref("silver_orders")}
+  WHERE order_purchase_timestamp IS NOT NULL
+)
+
+SELECT
+  FORMAT_DATE('%Y%m%d', data)        AS date_id,
+  data,
+  EXTRACT(DAY       FROM data)       AS dia,
+  EXTRACT(MONTH     FROM data)       AS mes,
+  EXTRACT(QUARTER   FROM data)       AS trimestre,
+  EXTRACT(YEAR      FROM data)       AS ano,
+  FORMAT_DATE('%A', data)            AS dia_semana,
+  CASE
+    WHEN EXTRACT(DAYOFWEEK FROM data) IN (1, 7) THEN true
+    ELSE false
+  END                                AS is_fim_de_semana
+
+FROM datas
+ORDER BY data

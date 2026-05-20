@@ -1,0 +1,72 @@
+config {
+  type: "table",
+  schema: "olist_gold",
+  description: "Tabela fato central com métricas de pedidos. Granularidade: um registro por pedido."
+}
+
+WITH pagamentos AS (
+  SELECT
+    order_id,
+    SUM(payment_value)                    AS valor_total_pago,
+    MAX(payment_installments)             AS max_parcelas,
+    STRING_AGG(DISTINCT payment_type)     AS formas_pagamento
+  FROM ${ref("silver_payments")}
+  GROUP BY order_id
+),
+
+itens AS (
+  SELECT
+    order_id,
+    COUNT(DISTINCT order_item_id)         AS qtd_itens,
+    SUM(price)                            AS valor_produtos,
+    SUM(freight_value)                    AS valor_frete,
+    MIN(product_id)                       AS product_id,
+    MIN(seller_id)                        AS seller_id
+  FROM ${ref("silver_order_items")}
+  GROUP BY order_id
+)
+
+SELECT
+  o.order_id,
+  c.customer_unique_id                    AS customer_id,
+  i.product_id,
+  FORMAT_DATE('%Y%m%d',
+    DATE(o.order_purchase_timestamp))     AS date_id,
+
+  -- métricas
+  i.qtd_itens,
+  i.valor_produtos,
+  i.valor_frete,
+  i.valor_produtos + i.valor_frete        AS valor_total_itens,
+  p.valor_total_pago,
+  p.max_parcelas,
+  p.formas_pagamento,
+  r.review_score,
+
+  -- status e datas
+  o.order_status,
+  o.order_purchase_timestamp,
+  o.order_delivered_customer_date,
+  o.order_estimated_delivery_date,
+
+  -- prazo de entrega em dias
+  DATE_DIFF(
+    DATE(o.order_delivered_customer_date),
+    DATE(o.order_purchase_timestamp),
+    DAY
+  )                                       AS dias_para_entrega,
+
+  -- entregue dentro do prazo?
+  CASE
+    WHEN o.order_delivered_customer_date <= o.order_estimated_delivery_date
+    THEN true
+    ELSE false
+  END                                     AS entrega_no_prazo
+
+FROM ${ref("silver_orders")} o
+LEFT JOIN ${ref("silver_customers")}  c  ON o.customer_id      = c.customer_id
+LEFT JOIN itens                       i  ON o.order_id         = i.order_id
+LEFT JOIN pagamentos                  p  ON o.order_id         = p.order_id
+LEFT JOIN ${ref("silver_reviews")}    r  ON o.order_id         = r.order_id
+
+WHERE o.order_id IS NOT NULL

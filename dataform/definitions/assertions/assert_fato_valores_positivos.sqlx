@@ -1,0 +1,9 @@
+config {
+  type: "assertion",
+  description: "Valores financeiros da fato_pedidos devem ser positivos."
+}
+
+SELECT order_id, valor_produtos, valor_frete
+FROM ${ref("fato_pedidos")}
+WHERE valor_produtos < 0
+   OR valor_frete    < 0

@@ -1,0 +1,9 @@
+config {
+  type: "assertion",
+  description: "customer_id deve ser único na dim_cliente."
+}
+
+SELECT customer_id, COUNT(*) AS total
+FROM ${ref("dim_cliente")}
+GROUP BY customer_id
+HAVING COUNT(*) > 1
