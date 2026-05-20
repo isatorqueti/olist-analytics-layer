@@ -1,0 +1,16 @@
+config {
+  type: "table",
+  schema: "olist_silver",
+  description: "Pagamentos limpos e tipados. Uma linha por order_id + payment_sequential."
+}
+
+SELECT
+  order_id,
+  CAST(payment_sequential   AS INT64)   AS payment_sequential,
+  LOWER(TRIM(payment_type))             AS payment_type,
+  CAST(payment_installments AS INT64)   AS payment_installments,
+  CAST(payment_value        AS FLOAT64) AS payment_value
+
+FROM `olist-analytics-layer.olist_bronze.payments_raw`
+
+WHERE order_id IS NOT NULL

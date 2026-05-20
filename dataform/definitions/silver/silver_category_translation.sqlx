@@ -1,0 +1,13 @@
+config {
+  type: "table",
+  schema: "olist_silver",
+  description: "Tradução de categorias de produto português para inglês."
+}
+
+SELECT
+  LOWER(TRIM(product_category_name))         AS product_category_name,
+  LOWER(TRIM(product_category_name_english)) AS product_category_name_english
+
+FROM `olist-analytics-layer.olist_bronze.category_translation_raw`
+
+WHERE product_category_name IS NOT NULL

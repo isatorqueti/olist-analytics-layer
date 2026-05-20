@@ -1,0 +1,15 @@
+config {
+  type: "table",
+  schema: "olist_silver",
+  description: "Sellers limpos e padronizados. Uma linha por seller_id."
+}
+
+SELECT
+  seller_id,
+  seller_zip_code_prefix,
+  LOWER(TRIM(seller_city))  AS seller_city,
+  UPPER(TRIM(seller_state)) AS seller_state
+
+FROM `olist-analytics-layer.olist_bronze.sellers_raw`
+
+WHERE seller_id IS NOT NULL

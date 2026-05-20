@@ -1,0 +1,17 @@
+config {
+  type: "table",
+  schema: "olist_silver",
+  description: "Clientes limpos e padronizados. Uma linha por customer_id."
+}
+
+SELECT
+  customer_id,
+  customer_unique_id,
+  customer_zip_code_prefix,
+  LOWER(TRIM(customer_city))  AS customer_city,
+  UPPER(TRIM(customer_state)) AS customer_state
+
+FROM `olist-analytics-layer.olist_bronze.customers_raw`
+
+WHERE customer_id IS NOT NULL
+  AND customer_unique_id IS NOT NULL
