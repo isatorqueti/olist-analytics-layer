@@ -148,5 +148,8 @@ Este projeto foi construído como exercício prático de Analytics Engineering, 
 - Qualidade e governança de dados
 - Boas práticas de engenharia analítica com Dataform
 
-**Autora:** Isadora Torqueti Silva
-[LinkedIn](https://www.linkedin.com/in/isadoratorqueti/) · [GitHub](https://github.com/isatorqueti)
+## Desenvolvido por
+
+- **Nome:** Isadora Torqueti
+- **GitHub:** https://github.com/isatorqueti
+- **Linkedin:** https://www.linkedin.com/in/isadoratorqueti/
